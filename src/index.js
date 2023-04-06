@@ -3,6 +3,7 @@ import { Clock } from "three";
 import { preloader } from "./loader";
 import resolvers from "./loader/resolvers";
 import { defaultAvatar } from "./config";
+import { speech } from "./speech";
 
 import {
   createDefaultContainer,
@@ -31,6 +32,11 @@ async function startApplication() {
 
   const avatar = Avatar.createDefault(renderer);
   scene.withAvatar(avatar);
+
+  await speech.init(key, region);
+  const audio = speech.generateAudio("Hello world", "en-US-DavisNeural");
+  let visemes = audio.visemeData;
+  console.log(visemes);
 
   function render() {
     window.requestAnimationFrame(render);
