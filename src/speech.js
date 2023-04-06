@@ -54,43 +54,57 @@ const generateAudio = async (text, voice) => {
   //   )
   // );
 
-  let visemeData = [];
-  let wordBreakData = [];
+    let visemeData = [];
+    let wordBreakData = [];
 
-  synthesizer.visemeReceived = function (s, e) {
-    if (e.animation) {
-      visemeData.push(...JSON.parse(e.animation).BlendShapes);
-    }
-  };
-
-  return new Promise((resolve, reject) => {
-    // Replace '&' with 'and' to avoid SSML errors
-    const ssml = getSsml(underscore.escape(text), voice);
-    synthesizer.speakSsmlAsync(
-      ssml,
-      (result) => {
-        let audio = "";
-
-        if (!!result.audioData) {
-          audio = Buffer.from(result.audioData).toString("base64");
-          resolve({
-            base64Audio: audio,
-            visemeData,
-          });
-        } else if (!!result.errorDetails) {
-          console.log("TTS Error\n", result.errorDetails);
-          reject(result.errorDetails);
-        } else {
-          console.log("TTS Error\n", "No audio data returned");
-          reject("No audio data returned");
+    synthesizer.visemeReceived = function (s, e) {
+        if (e.animation) {
+            visemeData.push(...JSON.parse(e.animation).BlendShapes);
         }
-      },
-      (error) => {
-        console.log("TTS Error\n", error);
-        reject(error);
-      }
-    );
-  });
+    };
+
+    synthesizer.wordBoundary = function (_, event) {
+        if (event) {
+            wordBreakData.push({
+                audioOffset: event.audioOffset,
+                duration: event.duration,
+                text: event.text,
+                textOffset: event.textOffset,
+                type: event.boundaryType,
+            });
+        }
+    }
+
+
+    return new Promise((resolve, reject) => {
+        // Replace '&' with 'and' to avoid SSML errors
+        const ssml = getSsml(underscore.escape(text), voice);
+        synthesizer.speakSsmlAsync(
+            ssml,
+            (result) => {
+                let audio = "";
+
+                if (!!result.audioData) {
+                    audio = Buffer.from(result.audioData).toString("base64");
+                    resolve({
+                        base64Audio: audio,
+                        visemeData,
+                        wordBreakData,
+                    });
+                } else if (!!result.errorDetails) {
+                    console.log("TTS Error\n", result.errorDetails);
+                    reject(result.errorDetails);
+                } else {
+                    console.log("TTS Error\n", "No audio data returned");
+                    reject("No audio data returned");
+                }
+            },
+            (error) => {
+                console.log("TTS Error\n", error);
+                reject(error);
+            }
+        );
+    });
 };
 
 export const speech = {
