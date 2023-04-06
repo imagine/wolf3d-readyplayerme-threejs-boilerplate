@@ -26,15 +26,15 @@ const checkInitialized = () => {
 /**
  * Initialization function
  */
-const init = () => {
-    if (process.env.SPEECH_KEY === undefined)
+const init = (key, region) => {
+    if (key === undefined)
       throw Error("SPEECH_KEY not defined");
-    if (process.env.SPEECH_REGION === undefined)
+    if (region === undefined)
       throw Error("SPEECH_REGION not defined");
   
     const speechConfig = sdk.SpeechConfig.fromSubscription(
-      process.env.SPEECH_KEY,
-      process.env.SPEECH_REGION
+      key,
+      region
     );
 
     client = new sdk.SpeechSynthesizer(speechConfig);
