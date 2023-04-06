@@ -33,6 +33,7 @@
     "es6-tween": "^5.5.11",
     "microsoft-cognitiveservices-speech-sdk": "^1.27.0",
     "postprocessing": "^6.17.3",
-    "three": "^0.120.1"
+    "three": "^0.120.1",
+    "underscore": "^1.13.6"
   }
 }
