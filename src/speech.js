@@ -36,8 +36,9 @@ const init = (key, region) => {
   if (region === undefined) throw Error("SPEECH_REGION not defined");
 
   const speechConfig = sdk.SpeechConfig.fromSubscription(key, region);
+  const audioConfig = sdk.AudioConfig.fromStreamOutput(new sdk.PushAudioOutputStreamCallback());
 
-  synthesizer = new sdk.SpeechSynthesizer(speechConfig);
+  synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 };
 
 /**
