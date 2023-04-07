@@ -55,26 +55,12 @@ const generateAudio = async (text, voice) => {
   // );
 
     let visemeData = [];
-    let wordBreakData = [];
 
     synthesizer.visemeReceived = function (s, e) {
         if (e.animation) {
             visemeData.push(...JSON.parse(e.animation).BlendShapes);
         }
     };
-
-    synthesizer.wordBoundary = function (_, event) {
-        if (event) {
-            wordBreakData.push({
-                audioOffset: event.audioOffset,
-                duration: event.duration,
-                text: event.text,
-                textOffset: event.textOffset,
-                type: event.boundaryType,
-            });
-        }
-    }
-
 
     return new Promise((resolve, reject) => {
         // Replace '&' with 'and' to avoid SSML errors
@@ -88,8 +74,7 @@ const generateAudio = async (text, voice) => {
                     audio = Buffer.from(result.audioData).toString("base64");
                     resolve({
                         base64Audio: audio,
-                        visemeData,
-                        wordBreakData,
+                        animations: visemeData,
                     });
                 } else if (!!result.errorDetails) {
                     console.log("TTS Error\n", result.errorDetails);

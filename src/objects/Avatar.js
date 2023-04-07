@@ -1,4 +1,4 @@
-import { AnimationMixer, LoopRepeat, Object3D, Vector3 } from "three";
+import { AnimationMixer, AnimationClip, LoopRepeat, Object3D, Vector3 } from "three";
 import { preloader } from "../loader";
 
 import MorphTargetAnimator from "../helpers/MorphTargetAnimator";
@@ -90,7 +90,8 @@ export class Avatar extends Object3D {
      * To see available morph targets and animations, upload your avatar to: https://gltf-viewer.donmccurdy.com/
      */
     const animationClip = this._findAnimation(defaultAnimation);
-    this.mixer.clipAction(animationClip).reset().play().setLoop(LoopRepeat);
+    console.log("yee ", animationClip);
+    // this.mixer.clipAction(animationClip).reset().play().setLoop(LoopRepeat);
     return this;
   }
 
@@ -116,6 +117,14 @@ export class Avatar extends Object3D {
     this.rotateHead();
     this.mixer.update(delta);
   }
+
+  playMorphAnimation(morphTargets, fps) {
+    console.log("creating clip from ", morphTargets);
+    var clip = AnimationClip.CreateFromMorphTargetSequence('statement', morphTargets, fps);
+    console.log("created clip", clip);
+    this.mixer.clipAction(clip).setDuration(1).play();
+  }
+
 
   _findAnimation(name) {
     return this.avatar.animations.find((anim) => anim.name === name);
