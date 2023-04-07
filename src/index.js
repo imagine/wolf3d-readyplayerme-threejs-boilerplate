@@ -67,72 +67,77 @@ async function startApplication() {
 
       let namedFrames = audio.animations.map((blendShapes) => {
         return {
-          browDown_L: blendShapes[41],
-          browDown_R: blendShapes[42],
+          browDownLeft: blendShapes[41],
+          browDownRight: blendShapes[42],
           browInnerUp: blendShapes[43],
-          browOuterUp_L: blendShapes[44],
-          browOuterUp_R: blendShapes[45],
-          cheekSquint_L: blendShapes[47],
-          cheekSquint_R: blendShapes[48],
-          eyeBlink_L: blendShapes[0],
-          eyeBlink_R: blendShapes[7],
-          eyeLookDown_L: blendShapes[1],
-          eyeLookDown_R: blendShapes[8],
-          eyeLookIn_L: blendShapes[2],
-          eyeLookIn_R: blendShapes[9],
-          eyeLookOut_L: blendShapes[3],
-          eyeLookOut_R: blendShapes[10],
-          eyeLookUp_L: blendShapes[4],
-          eyeLookUp_R: blendShapes[11],
-          eyeSquint_L: blendShapes[5],
-          eyeSquint_R: blendShapes[12],
-          eyeWide_L: blendShapes[6],
-          eyeWide_R: blendShapes[13],
+          browOuterUpLeft: blendShapes[44],
+          browOuterUpRight: blendShapes[45],
+          cheekSquintLeft: blendShapes[47],
+          cheekSquintRight: blendShapes[48],
+          eyeBlinkLeft: blendShapes[0],
+          eyeBlinkRight: blendShapes[7],
+          eyeLookDownLeft: blendShapes[1],
+          eyeLookDownRight: blendShapes[8],
+          eyeLookInLeft: blendShapes[2],
+          eyeLookInRight: blendShapes[9],
+          eyeLookOutLeft: blendShapes[3],
+          eyeLookOutRight: blendShapes[10],
+          eyeLookUpLeft: blendShapes[4],
+          eyeLookUpRight: blendShapes[11],
+          eyeSquintLeft: blendShapes[5],
+          eyeSquintRight: blendShapes[12],
+          eyeWideLeft: blendShapes[6],
+          eyeWideRight: blendShapes[13],
           jawLeft: blendShapes[15],
           jawOpen: blendShapes[17],
           jawRight: blendShapes[16],
           mouthClose: blendShapes[18],
-          mouthDimple_L: blendShapes[27],
-          mouthDimple_R: blendShapes[28],
-          mouthFrown_L: blendShapes[25],
-          mouthFrown_R: blendShapes[26],
+          mouthDimpleLeft: blendShapes[27],
+          mouthDimpleRight: blendShapes[28],
+          mouthFrownLeft: blendShapes[25],
+          mouthFrownRight: blendShapes[26],
           mouthFunnel: blendShapes[19],
           mouthLeft: blendShapes[21],
-          mouthLowerDown_L: blendShapes[37],
-          mouthLowerDown_R: blendShapes[38],
-          mouthPress_L: blendShapes[35],
-          mouthPress_R: blendShapes[36],
+          mouthLowerDownLeft: blendShapes[37],
+          mouthLowerDownRight: blendShapes[38],
+          mouthPressLeft: blendShapes[35],
+          mouthPressRight: blendShapes[36],
           mouthPucker: blendShapes[20],
           mouthRight: blendShapes[22],
           mouthRollLower: blendShapes[31],
           mouthRollUpper: blendShapes[32],
           mouthShrugLower: blendShapes[33],
           mouthShrugUpper: blendShapes[34],
-          mouthSmile_L: blendShapes[23],
-          mouthSmile_R: blendShapes[24],
-          mouthStretch_L: blendShapes[29],
-          mouthStretch_R: blendShapes[30],
-          mouthUpperUp_L: blendShapes[39],
-          mouthUpperUp_R: blendShapes[40],
-          noseSneer_L: blendShapes[49],
-          noseSneer_R: blendShapes[50],
+          mouthSmileLeft: blendShapes[23],
+          mouthSmileRight: blendShapes[24],
+          mouthStretchLeft: blendShapes[29],
+          mouthStretchRight: blendShapes[30],
+          mouthUpperUpLeft: blendShapes[39],
+          mouthUpperUpRight: blendShapes[40],
+          noseSneerLeft: blendShapes[49],
+          noseSneerRight: blendShapes[50],
           cheekPuff: blendShapes[46],
           jawForward: blendShapes[14],
           tongueOut: blendShapes[51],
         };
       });
 
-      let morphTargets = namedFrames.map((namedFrame) => {
-        let morphTarget = [];
-        for (const [key, value] of Object.entries(namedFrame)) {
-          // AnimationClip.CreateFromMorphTargetSequence takes a MorphTarget[], which contains vertices rather than a targetValue
-          // TODO: get that going or animate the morph targets another way
-          morphTarget.push({ name: key, vertices: value });
+      let blendShapeFrames = {};
+      for (let i = 0; i < namedFrames.length; i++) {
+        const blendShapes = namedFrames[i];
+        for (const [blendShapeName, value] of Object.entries(blendShapes)) {
+          if (!blendShapeFrames[blendShapeName]) {
+            blendShapeFrames[blendShapeName] = [];
+          }
+          blendShapeFrames[blendShapeName].push(value);
         }
-        return morphTarget;
-      });
+      }
 
-      avatar.playMorphAnimation(morphTargets, 60);
+      let times = [];
+      for (let i = 0; i < namedFrames.length; i++) {
+        times.push(i/60.0);
+      }
+
 
       if (!audio?.base64Audio) {
         console.error("No audio data to play");
@@ -147,10 +152,11 @@ async function startApplication() {
       if (audioElement) {
         audioElement.src = url;
         audioElement.onplay = () => {
-          console.log("playing audio");
-          // TODO: start animation
+          let duration = audioElement.duration;
         };
+        container.appendChild(audioElement);
         audioElement.play();
+        avatar.playMorphAnimation(blendShapeFrames, times);
       }
     } catch (e) {
       console.log("failed to generate audio");

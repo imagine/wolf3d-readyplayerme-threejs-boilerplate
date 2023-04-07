@@ -1,4 +1,5 @@
-import { AnimationMixer, AnimationClip, LoopRepeat, Object3D, Vector3 } from "three";
+import { AnimationMixer, NumberKeyframeTrack, KeyframeTrack, AnimationClip, LoopRepeat, Object3D, Vector3 } from "three";
+import * as THREE from "three";
 import { preloader } from "../loader";
 
 import MorphTargetAnimator from "../helpers/MorphTargetAnimator";
@@ -90,7 +91,6 @@ export class Avatar extends Object3D {
      * To see available morph targets and animations, upload your avatar to: https://gltf-viewer.donmccurdy.com/
      */
     const animationClip = this._findAnimation(defaultAnimation);
-    console.log("yee ", animationClip);
     // this.mixer.clipAction(animationClip).reset().play().setLoop(LoopRepeat);
     return this;
   }
@@ -118,11 +118,33 @@ export class Avatar extends Object3D {
     this.mixer.update(delta);
   }
 
-  playMorphAnimation(morphTargets, fps) {
-    console.log("creating clip from ", morphTargets);
-    var clip = AnimationClip.CreateFromMorphTargetSequence('statement', morphTargets, fps);
-    console.log("created clip", clip);
-    this.mixer.clipAction(clip).setDuration(1).play();
+  playMorphAnimation(blendShapeFrames, times) {
+    // set up KeyFrameTrack objects
+    let tracks = [];
+   
+    for (let [name, values] of Object.entries(blendShapeFrames)) {
+      const id = this.headMesh.morphTargetDictionary[name];
+
+      console.log(name, times, values);
+
+      const track = new NumberKeyframeTrack(`${this.headMesh.name}.morphTargetInfluences[${id}]`, times, values);
+      tracks.push(track);
+    }
+
+    // put them into an AnimationClip
+    const duration = times[times.length-1];
+    const clip = new AnimationClip("morphAnimation", duration*.5, tracks);
+
+    // create an AnimationAction
+    const action = this.mixer.clipAction(clip);
+    action.setLoop(THREE.LoopOnce, 1);
+
+    this.mixer.addEventListener( 'finished', function( e ) { 
+      console.log("finished animation", e.action);
+    } );
+
+    // play
+    action.play();    
   }
 
 
